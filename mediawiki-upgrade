@@ -1,0 +1,248 @@
+#!/bin/bash
+
+# Script to upgrade MediaWiki core, extensions and skins and install it to intermediate installation directory. Read README.md for details.
+
+. "bash-functions.sh"
+
+upgrade_extensions() {
+	log_info "Downloading extensions"
+	cd "$EXTENSION_DIRECTORY"
+	local IFS=";"
+	local EXTENSION_NAME=""
+	local EXTENSION_GIT_URL=""
+	local EXTENSION_BRANCH=""
+	while read EXTENSION_NAME EXTENSION_GIT_URL EXTENSION_BRANCH
+	do
+		if [ -z "$EXTENSION_NAME" ]
+		then
+			continue
+		fi
+		if [ "${EXTENSION_NAME:0:1}" == "#" ]
+		then
+			continue
+		fi
+		if [ -z "$EXTENSION_GIT_URL" ]
+		then
+			EXTENSION_GIT_URL="https://gerrit.wikimedia.org/r/mediawiki/extensions/$EXTENSION_NAME"
+		fi
+		if [ -z "$EXTENSION_BRANCH" ]
+		then
+			EXTENSION_BRANCH="$BRANCH"
+		fi
+		if [ -d "$EXTENSION_DIRECTORY/$EXTENSION_NAME" ]
+		then
+			cd "$EXTENSION_DIRECTORY/$EXTENSION_NAME"
+			log_info "Downloading extension $EXTENSION_NAME"
+			git pull
+			handle_error_code "git pull"
+			cd "$EXTENSION_DIRECTORY"
+		else
+			log_info "Downloading extension $EXTENSION_NAME"
+			git clone "$EXTENSION_GIT_URL"
+			handle_error_code "git clone"
+		fi
+		if [ -d "$EXTENSION_DIRECTORY/$EXTENSION_NAME" ]
+		then
+			cd "$EXTENSION_DIRECTORY/$EXTENSION_NAME"
+			git checkout "$EXTENSION_BRANCH"
+			handle_error_code "git checkout"
+			cd "$EXTENSION_DIRECTORY"
+		fi
+	done < "$EXTENSION_LIST_FILE"
+	cd "$CURRENT_DIRECTORY"
+}
+
+upgrade_skins() {
+	log_info "Downloading skins"
+
+	cd "$SKIN_DIRECTORY"
+	local IFS=";"
+	local SKIN_NAME=""
+	local SKIN_GIT_URL=""
+	local SKIN_BRANCH=""
+	while read SKIN_NAME SKIN_GIT_URL SKIN_BRANCH
+	do
+		if [ -z "$SKIN_NAME" ]
+		then
+			continue
+		fi
+		if [ "${SKIN_NAME:0:1}" == "#" ]
+		then
+			continue
+		fi
+		if [ -z "$SKIN_GIT_URL" ]
+		then
+			SKIN_GIT_URL="https://gerrit.wikimedia.org/r/mediawiki/skins/$SKIN_NAME"
+		fi
+		if [ -z "$SKIN_BRANCH" ]
+		then
+			SKIN_BRANCH="$BRANCH"
+		fi
+		if [ -d "$SKIN_DIRECTORY/$SKIN_NAME" ]
+		then
+			cd "$SKIN_DIRECTORY/$SKIN_NAME"
+			log_info "Downloading skin $SKIN_NAME"
+			git pull
+			handle_error_code "git pull"
+			cd "$SKIN_DIRECTORY"
+		else
+			log_info "Downloading skin $SKIN_NAME"
+			git clone "$SKIN_GIT_URL"
+			handle_error_code "git clone"
+		fi
+		if [ -d "$SKIN_DIRECTORY/$SKIN_NAME" ]
+		then
+			cd "$SKIN_DIRECTORY/$SKIN_NAME"
+			git checkout "$SKIN_BRANCH"
+			handle_error_code "git checkout"
+			cd "$SKIN_DIRECTORY"
+		fi
+	done < "$SKIN_LIST_FILE"
+	cd "$CURRENT_DIRECTORY"
+}
+
+copy_extensions() {
+	local IFS=";"
+	local EXTENSION_NAME=""
+	local EXTENSION_GIT_URL=""
+	while read EXTENSION_NAME _UNUSED
+	do
+		if [ -z "$EXTENSION_NAME" ]
+		then
+			continue
+		fi
+		if [ "${EXTENSION_NAME:0:1}" == "#" ]
+		then
+			continue
+		fi
+		if [ -d "$EXTENSION_DIRECTORY/$EXTENSION_NAME" ]
+		then
+			log_info "Copying $EXTENSION_NAME"
+			cp -r "$EXTENSION_DIRECTORY/$EXTENSION_NAME" "$INTERMEDIATE_MEDIAWIKI_DIRECTORY/extensions"
+			cd "$INTERMEDIATE_MEDIAWIKI_DIRECTORY/extensions/$EXTENSION_NAME"
+			if [ -f "./composer.json" ]
+			then
+				composer update --no-dev
+				handle_error_code "composer update"
+				composer install --no-dev
+				handle_error_code "composer install"
+			fi
+			cd "$INTERMEDIATE_MEDIAWIKI_DIRECTORY"
+		else
+			log_error "$EXTENSION_NAME not found"
+		fi
+	done < "$EXTENSION_LIST_FILE"
+}
+
+copy_skins() {
+	local IFS=";"
+	local SKIN_NAME=""
+	local SKIN_GIT_URL=""
+	while read SKIN_NAME _UNUSED
+	do
+		if [ -z "$SKIN_NAME" ]
+		then
+			continue
+		fi
+		if [ "${SKIN_NAME:0:1}" == "#" ]
+		then
+			continue
+		fi
+		if [ -d "$SKIN_DIRECTORY/$SKIN_NAME" ]
+		then
+			log_info "Copying $SKIN_NAME"
+			cp -r "$SKIN_DIRECTORY/$SKIN_NAME" "$INTERMEDIATE_MEDIAWIKI_DIRECTORY/skins"
+			cd "$INTERMEDIATE_MEDIAWIKI_DIRECTORY/skins/$SKIN_NAME"
+			if [ -f "./composer.json" ]
+			then
+				composer update --no-dev
+				handle_error_code "composer update"
+				composer install --no-dev
+				handle_error_code "composer install"
+			fi
+			cd "$INTERMEDIATE_MEDIAWIKI_DIRECTORY"
+		else
+			log_error "$SKIN_NAME not found"
+		fi
+	done < "$SKIN_LIST_FILE"
+}
+
+# Settings
+
+CURRENT_DIRECTORY="$(pwd)"
+
+if [ -f "./mediawikirc" ]
+then
+	. "./mediawikirc"
+fi
+
+CORE_DIRECTORY="$CURRENT_DIRECTORY/core"
+CORE_MEDIAWIKI_DIRECTORY="$CORE_DIRECTORY/core"
+EXTENSION_DIRECTORY="$CURRENT_DIRECTORY/extensions"
+SKIN_DIRECTORY="$CURRENT_DIRECTORY/skins"
+INTERMEDIATE_DIRECTORY="$CURRENT_DIRECTORY/installation-files"
+INTERMEDIATE_MEDIAWIKI_DIRECTORY="$INTERMEDIATE_DIRECTORY/w"
+log_info "Intermediate directory (files will be copied here): $INTERMEDIATE_MEDIAWIKI_DIRECTORY"
+EXTENSION_LIST_FILE="$CURRENT_DIRECTORY/extension-list.txt"
+SKIN_LIST_FILE="$CURRENT_DIRECTORY/skin-list.txt"
+
+TARGET_MEDIAWIKI_DIRECTORY="$MEDIAWIKI_DIR"
+log_info "Mediawiki directory: $TARGET_MEDIAWIKI_DIRECTORY"
+
+if [ -z "$BRANCH" ]
+then
+	log_fatal "BRANCH environment variable not set"
+fi
+
+# Updating core
+
+if [ -d "$CORE_MEDIAWIKI_DIRECTORY" ]
+then
+	cd "$CORE_MEDIAWIKI_DIRECTORY"
+	log_info "Downloading core"
+	git pull
+	handle_error_code "git pull"
+else
+	cd "$CORE_DIRECTORY"
+	log_info "Downloading core"
+	git clone "https://gerrit.wikimedia.org/r/mediawiki/core.git" --branch "$BRANCH"
+	handle_error_code "git clone"
+fi
+cd "$CURRENT_DIRECTORY"
+
+# Updating extensions
+
+upgrade_extensions
+
+# Updating skins
+
+upgrade_skins
+
+# Copying to intermediate installation directory
+
+log_info "Copying files"
+
+rm -rf "$INTERMEDIATE_MEDIAWIKI_DIRECTORY"
+mkdir -p "$INTERMEDIATE_DIRECTORY"
+cp -r "$CORE_MEDIAWIKI_DIRECTORY" "$INTERMEDIATE_MEDIAWIKI_DIRECTORY"
+cp -r "$TARGET_MEDIAWIKI_DIRECTORY/maintenance_custom" "$INTERMEDIATE_MEDIAWIKI_DIRECTORY"
+cp "$TARGET_MEDIAWIKI_DIRECTORY/LocalSettings.php" "$INTERMEDIATE_MEDIAWIKI_DIRECTORY"
+cp "$TARGET_MEDIAWIKI_DIRECTORY/do_maintenance" "$INTERMEDIATE_MEDIAWIKI_DIRECTORY"
+cd "$INTERMEDIATE_MEDIAWIKI_DIRECTORY"
+composer update --no-dev
+handle_error_code "composer update"
+composer install --no-dev
+handle_error_code "composer install"
+
+copy_extensions
+
+copy_skins
+
+cp -r "$TARGET_MEDIAWIKI_DIRECTORY/skins/common" "$INTERMEDIATE_MEDIAWIKI_DIRECTORY/skins"
+
+cd "$CURRENT_DIRECTORY"
+
+# Finish
+
+log_info "Finished, copied to $INTERMEDIATE_MEDIAWIKI_DIRECTORY"
+

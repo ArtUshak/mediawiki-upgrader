@@ -1,0 +1,5 @@
+/core/*
+/skins/*
+/extensions/*
+!/*/.gitkeep
+/installation-files

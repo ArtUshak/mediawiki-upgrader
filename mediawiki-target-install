@@ -1,0 +1,69 @@
+#!/bin/bash
+
+. "bash-functions.sh"
+
+# Settings
+
+CURRENT_DIRECTORY="$(pwd)"
+if [ -f "./mediawikirc" ]
+then
+	. "./mediawikirc"
+fi
+if [ -z "$FILE_BACKUP_DIRECTORY" ]
+then
+	FILE_BACKUP_DIRECTORY="/root/backup-data/mediawiki-files"
+fi
+if [ -z "$MYSQL_DUMP_DIRECTORY" ]
+then
+	MYSQL_DUMP_DIRECTORY="/root/backup-data/mysql-dumps"
+fi
+
+FILE_BACKUP="$FILE_BACKUP_DIRECTORY/$(date -I)"
+log_info "Backup directory: $FILE_BACKUP"
+MYSQL_DUMP="$MYSQL_DUMP_DIRECTORY/mysql-$(date -I).sql"
+log_info "MySQL dump file: $MYSQL_DUMP"
+
+INTERMEDIATE_DIRECTORY="$CURRENT_DIRECTORY/installation-files"
+INTERMEDIATE_MEDIAWIKI_DIRECTORY="$INTERMEDIATE_DIRECTORY/w"
+log_info "Intermediate directory: $INTERMEDIATE_MEDIAWIKI_DIRECTORY"
+if [ -z "$TARGET_MEDIAWIKI_DIRECTORY" ]
+then
+	TARGET_MEDIAWIKI_DIRECTORY="$MEDIAWIKI_DIR"
+fi
+log_info "Mediawiki installation directory (files will be copied here): $TARGET_MEDIAWIKI_DIRECTORY"
+
+# Creating backup
+
+log_info "Removing old backup"
+rm --recursive --force "$FILE_BACKUP_DIRECTORY"  # TODO
+mkdir --parents "$FILE_BACKUP_DIRECTORY"
+log_info "Creating backup"
+cp --recursive "$TARGET_MEDIAWIKI_DIRECTORY" "$FILE_BACKUP"
+MYSQL_DUMP_FILE="$MYSQL_DUMP" "./mediawiki-mysql-dump"  # TODO
+
+# Enabling maintenance page in nginx
+
+log_info "Enabling maitenance page in nginx"
+ln --force --symbolic --no-dereference absurdopedia.wiki.maintenance /etc/nginx/vhosts-locations/absurdopedia.wiki
+systemctl reload nginx
+
+# Installing MediaWiki from intermediate directory to target directory
+
+log_info "Removing old installation files"
+find "$TARGET_MEDIAWIKI_DIRECTORY" -mindepth 1 -maxdepth 1 -not \( -name "images" \) -exec rm -rf {} \;
+log_info "Copying files to installation directory"
+find "$INTERMEDIATE_MEDIAWIKI_DIRECTORY" -mindepth 1 -maxdepth 1 -not \( -name "images" \) -exec cp -r {} "$TARGET_MEDIAWIKI_DIRECTORY" \;
+log_info "Running update scripts"
+cd "$TARGET_MEDIAWIKI_DIRECTORY"
+php "./maintenance/cleanupUsersWithNoId.php" --prefix=
+php "./maintenance/update.php"
+php "./maintenance/rebuildLocalisationCache.php"
+"./do_maintenance"
+chown -R www-root:www-root "$TARGET_MEDIAWIKI_DIRECTORY"
+chmod +r -R "$TARGET_MEDIAWIKI_DIRECTORY"
+
+# Disaling maintenance page in nginx
+
+log_info "Disabling maintenance page in nginx"
+ln --force --symbolic --no-dereference absurdopedia.wiki.main /etc/nginx/vhosts-locations/absurdopedia.wiki
+systemctl reload nginx

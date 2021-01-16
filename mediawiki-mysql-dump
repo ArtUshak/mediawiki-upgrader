@@ -1,0 +1,18 @@
+#!/bin/bash
+
+. "$HOME/.profile"
+
+if [ -z "$MYSQL_DUMP_FILE" ]
+then
+	echo "[FATAL] MYSQL_DUMP_FILE not set"
+	exit -1
+fi
+if [ -z "$MYSQL_PASSWORD" ]
+then
+	echo "[FATAL] MYSQL_PASSWORD not set"
+	exit -1
+fi
+
+# TODO
+
+mysqldump --user=absur_db_user absurdopedia_db --result-file="$MYSQL_DUMP_FILE" --password="$MYSQL_PASSWORD"
