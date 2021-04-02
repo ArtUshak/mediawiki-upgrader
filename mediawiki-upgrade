@@ -122,9 +122,9 @@ copy_extensions() {
 			cd "$INTERMEDIATE_MEDIAWIKI_DIRECTORY/extensions/$EXTENSION_NAME"
 			if [ -f "./composer.json" ]
 			then
-				composer update --no-dev
+				"$PHP_EXECUTABLE" "$COMPOSER_EXECUTABLE" update --no-dev
 				handle_error_code "composer update"
-				composer install --no-dev
+				"$PHP_EXECUTABLE" "$COMPOSER_EXECUTABLE" install --no-dev
 				handle_error_code "composer install"
 			fi
 			cd "$INTERMEDIATE_MEDIAWIKI_DIRECTORY"
@@ -155,9 +155,9 @@ copy_skins() {
 			cd "$INTERMEDIATE_MEDIAWIKI_DIRECTORY/skins/$SKIN_NAME"
 			if [ -f "./composer.json" ]
 			then
-				composer update --no-dev
+				"$PHP_EXECUTABLE" "$COMPOSER_EXECUTABLE" update --no-dev
 				handle_error_code "composer update"
-				composer install --no-dev
+				"$PHP_EXECUTABLE" "$COMPOSER_EXECUTABLE" install --no-dev
 				handle_error_code "composer install"
 			fi
 			cd "$INTERMEDIATE_MEDIAWIKI_DIRECTORY"
@@ -174,6 +174,16 @@ CURRENT_DIRECTORY="$(pwd)"
 if [ -f "./mediawikirc" ]
 then
 	. "./mediawikirc"
+fi
+
+if [ -z "$COMPOSER_EXECUTABLE" ]
+then
+	COMPOSER_EXECUTABLE="/usr/local/bin/composer"
+fi
+
+if [ -z "$PHP_EXECUTABLE" ]
+then
+	PHP_EXECUTABLE="php"
 fi
 
 CORE_DIRECTORY="$CURRENT_DIRECTORY/core"
@@ -229,9 +239,9 @@ cp -r "$TARGET_MEDIAWIKI_DIRECTORY/maintenance_custom" "$INTERMEDIATE_MEDIAWIKI_
 cp "$TARGET_MEDIAWIKI_DIRECTORY/LocalSettings.php" "$INTERMEDIATE_MEDIAWIKI_DIRECTORY"
 cp "$TARGET_MEDIAWIKI_DIRECTORY/do_maintenance" "$INTERMEDIATE_MEDIAWIKI_DIRECTORY"
 cd "$INTERMEDIATE_MEDIAWIKI_DIRECTORY"
-composer update --no-dev
+"$PHP_EXECUTABLE" "$COMPOSER_EXECUTABLE" update --no-dev
 handle_error_code "composer update"
-composer install --no-dev
+"$PHP_EXECUTABLE" "$COMPOSER_EXECUTABLE" install --no-dev
 handle_error_code "composer install"
 
 copy_extensions

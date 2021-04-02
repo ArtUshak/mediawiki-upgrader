@@ -9,6 +9,12 @@ if [ -f "./mediawikirc" ]
 then
 	. "./mediawikirc"
 fi
+
+if [ -z "$PHP_EXECUTABLE" ]
+then
+	PHP_EXECUTABLE="php"
+fi
+
 if [ -z "$FILE_BACKUP_DIRECTORY" ]
 then
 	FILE_BACKUP_DIRECTORY="/root/backup-data/mediawiki-files"
@@ -55,9 +61,9 @@ log_info "Copying files to installation directory"
 find "$INTERMEDIATE_MEDIAWIKI_DIRECTORY" -mindepth 1 -maxdepth 1 -not \( -name "images" \) -exec cp -r {} "$TARGET_MEDIAWIKI_DIRECTORY" \;
 log_info "Running update scripts"
 cd "$TARGET_MEDIAWIKI_DIRECTORY"
-php "./maintenance/cleanupUsersWithNoId.php" --prefix=
-php "./maintenance/update.php"
-php "./maintenance/rebuildLocalisationCache.php"
+"$PHP_EXECUTABLE" "./maintenance/cleanupUsersWithNoId.php" --prefix=
+"$PHP_EXECUTABLE" "./maintenance/update.php"
+"$PHP_EXECUTABLE" "./maintenance/rebuildLocalisationCache.php"
 "./do_maintenance"
 chown -R www-root:www-root "$TARGET_MEDIAWIKI_DIRECTORY"
 chmod +r -R "$TARGET_MEDIAWIKI_DIRECTORY"

@@ -3,3 +3,4 @@
 /extensions/*
 !/*/.gitkeep
 /installation-files
+/mediawikirc

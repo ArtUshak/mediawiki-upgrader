@@ -41,3 +41,5 @@ CheckUser
 
 * `BRANCH` — название git-ветки, из которой брать версии компонентов, например `REL1_35`.
 * `MEDIAWIKI_DIR` — путь к директории с действующей инсталляцией MediaWiki.
+* `PHP_EXECUTABLE` — путь к исполняемуму файлу PHP (по умолчанию — просто `php`).
+* `COMPOSER_EXECUTABLE` — путь к файлу Composer'а (по умолчанию — `/usr/local/bin/composer`).

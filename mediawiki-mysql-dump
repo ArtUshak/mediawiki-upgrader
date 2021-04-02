@@ -13,6 +13,4 @@ then
 	exit -1
 fi
 
-# TODO
-
 mysqldump --user=absur_db_user absurdopedia_db --result-file="$MYSQL_DUMP_FILE" --password="$MYSQL_PASSWORD"
