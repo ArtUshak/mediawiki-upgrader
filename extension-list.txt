@@ -51,3 +51,5 @@ YouTube
 TimedMediaHandler
 SyntaxHighlight_GeSHi
 NativeSvgHandler
+UrlGetParameters
+WikiDexFileRepository;https://github.com/ciencia/mediawiki-extensions-WikiDexFileRepository.git;master
