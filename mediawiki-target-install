@@ -75,7 +75,7 @@ find "$INTERMEDIATE_MEDIAWIKI_DIRECTORY" -mindepth 1 -maxdepth 1 -not \( -name "
 log_info "Changing file permissions"
 find "$TARGET_MEDIAWIKI_DIRECTORY" -type d -exec chmod 755 {} \;
 find "$TARGET_MEDIAWIKI_DIRECTORY" -type f -exec chmod 644 {} \;
-chmod o+x "$TARGET_MEDIAWIKI_DIRECTORY/do_maintenance"
+chmod 744 "$TARGET_MEDIAWIKI_DIRECTORY/do_maintenance"
 log_info "Running update scripts"
 cd "$TARGET_MEDIAWIKI_DIRECTORY"
 "$PHP_EXECUTABLE" "./maintenance/cleanupUsersWithNoId.php" --prefix=
