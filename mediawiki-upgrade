@@ -211,6 +211,7 @@ then
 	cd "$CORE_MEDIAWIKI_DIRECTORY"
 	log_info "Downloading core"
 	git pull
+	git checkout "$BRANCH"
 	handle_error_code "git pull"
 else
 	cd "$CORE_DIRECTORY"
