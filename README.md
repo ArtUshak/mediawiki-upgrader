@@ -52,5 +52,6 @@ CheckUser
 * `DONT_PRESERVE_DIRECTORIES` — непустое значение, если директории не нужно сохранять.
 * `DONT_PRESERVE_FILES` — непустое значение, если файлы не нужно сохранять.
 * `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE` — имя пользователя, пароль и имя базы данных MySQL для создания дампа.
+* `MYSQL_HOST` — хост MySQL (по умолчанию — `localhost`).
 * `FILE_BACKUP_DIRECTORY` — путь к директории с дампами файлов MediaWiki.
 * `MYSQL_DUMP_DIRECTORY` — путь к директории с дампами MySQL.

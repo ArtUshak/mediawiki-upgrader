@@ -17,5 +17,9 @@ then
 	echo "[FATAL] MYSQL_PASSWORD not set"
 	exit -1
 fi
+if [ -z "$MYSQL_HOST" ]
+then
+	MYSQL_HOST="localhost"
+fi
 
-mysqldump --user="$MYSQL_USER" "$MYSQL_DATABASE" --result-file="$MYSQL_DUMP_FILE" --password="$MYSQL_PASSWORD"
+mysqldump --user="$MYSQL_USER" "$MYSQL_DATABASE" --result-file="$MYSQL_DUMP_FILE" --password="$MYSQL_PASSWORD" --host="$MYSQL_HOST"
