@@ -2,6 +2,11 @@
 
 . "$HOME/.profile"
 
+if [ -f "./mediawikirc" ]
+then
+        . "./mediawikirc"
+fi
+
 if [ -z "$MYSQL_DUMP_FILE" ]
 then
 	echo "[FATAL] MYSQL_DUMP_FILE not set"
@@ -13,4 +18,4 @@ then
 	exit -1
 fi
 
-mysqldump --user=absur_db_user absurdopedia_db --result-file="$MYSQL_DUMP_FILE" --password="$MYSQL_PASSWORD"
+mysqldump --user="$MYSQL_USER" "$MYSQL_DATABASE" --result-file="$MYSQL_DUMP_FILE" --password="$MYSQL_PASSWORD"

@@ -51,3 +51,5 @@ CheckUser
 * `PRESERVED_FILES` — список имён файлов, которые нужно сохранить, разделённых пробелом (по умолчанию — два файла: `LocalSettings.php` и `do_maintenance`).
 * `DONT_PRESERVE_DIRECTORIES` — непустое значение, если директории не нужно сохранять.
 * `DONT_PRESERVE_FILES` — непустое значение, если файлы не нужно сохранять.
+* `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE` — имя пользователя, пароль и имя базы данных MySQL для создания дампа.
+* `MYSQL_DUMP_FILE` — путь к файлу для дампа MySQL.
