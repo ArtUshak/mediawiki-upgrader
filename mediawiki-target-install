@@ -79,9 +79,12 @@ find "$TARGET_MEDIAWIKI_DIRECTORY" -mindepth 1 -maxdepth 1 -not \( -name "images
 log_info "Copying files to installation directory"
 find "$INTERMEDIATE_MEDIAWIKI_DIRECTORY" -mindepth 1 -maxdepth 1 -not \( -name "images" \) -exec cp -r {} "$TARGET_MEDIAWIKI_DIRECTORY" \;
 log_info "Changing file permissions"
-find "$TARGET_MEDIAWIKI_DIRECTORY" -type d -exec chmod 755 {} \;
-find "$TARGET_MEDIAWIKI_DIRECTORY" -type f -exec chmod 644 {} \;
-chmod 744 "$TARGET_MEDIAWIKI_DIRECTORY/do_maintenance"
+if [ -z "$DONT_CHOWN_AND_CHMOD" ]
+then
+	find "$TARGET_MEDIAWIKI_DIRECTORY" -type d -exec chmod 755 {} \;
+	find "$TARGET_MEDIAWIKI_DIRECTORY" -type f -exec chmod 644 {} \;
+	chmod 744 "$TARGET_MEDIAWIKI_DIRECTORY/do_maintenance"
+fi
 log_info "Running update scripts"
 cd "$TARGET_MEDIAWIKI_DIRECTORY"
 "$PHP_EXECUTABLE" "./maintenance/cleanupUsersWithNoId.php" --prefix=
@@ -93,8 +96,11 @@ else
 	"$PHP_EXECUTABLE" "./maintenance/rebuildLocalisationCache.php" "--lang=$LOCALISATION_CACHE_LANG"
 fi
 "./do_maintenance"
-chown -R www-root:www-root "$TARGET_MEDIAWIKI_DIRECTORY"
-chmod +r -R "$TARGET_MEDIAWIKI_DIRECTORY"
+if [ -z "$DONT_CHOWN_AND_CHMOD" ]
+then
+	chown -R www-root:www-root "$TARGET_MEDIAWIKI_DIRECTORY"
+	chmod +r -R "$TARGET_MEDIAWIKI_DIRECTORY"
+else
 
 # Disaling maintenance page in nginx
 
