@@ -55,3 +55,4 @@ CheckUser
 * `MYSQL_HOST` — хост MySQL (по умолчанию — `localhost`).
 * `FILE_BACKUP_DIRECTORY` — путь к директории с дампами файлов MediaWiki.
 * `MYSQL_DUMP_DIRECTORY` — путь к директории с дампами MySQL.
+* `DONT_SET_NGINX_LOCATIONS` — непустое значение, если файлы не нужно менять конфигурации nginx с помощью символьных ссылок. Если значение установлено, то переменные `NGINX_LOCATION_CURRENT`, `NGINX_LOCATION_MAIN` и `NGINX_LOCATION_MAINTENANCE` необязательны и игнорируются.
