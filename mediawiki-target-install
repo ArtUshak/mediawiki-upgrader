@@ -105,6 +105,7 @@ else
 # Disaling maintenance page in nginx
 
 if [ -z "$DONT_SET_NGINX_LOCATIONS" ]
+then
 	log_info "Disabling maintenance page in nginx"
 	ln --force --symbolic --no-dereference "$NGINX_LOCATION_MAIN" "$NGINX_LOCATION_CURRENT"
 	systemctl reload nginx
