@@ -100,7 +100,7 @@ if [ -z "$DONT_CHOWN_AND_CHMOD" ]
 then
 	chown -R www-root:www-root "$TARGET_MEDIAWIKI_DIRECTORY"
 	chmod +r -R "$TARGET_MEDIAWIKI_DIRECTORY"
-else
+fi
 
 # Disaling maintenance page in nginx
 
