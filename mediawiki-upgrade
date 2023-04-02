@@ -197,7 +197,7 @@ fi
 
 if [ -z "$PRESERVED_FILES" ]
 then
-	PRESERVED_FILES=("LocalSettings.php" "do_maintenance")
+	PRESERVED_FILES_ARRAY=("LocalSettings.php" "do_maintenance")
 else
 	IFS=' ' read -r -a PRESERVED_FILES_ARRAY <<< "$PRESERVED_FILES"
 fi
