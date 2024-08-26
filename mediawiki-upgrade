@@ -280,6 +280,8 @@ copy_skins
 
 cp -r "$TARGET_MEDIAWIKI_DIRECTORY/skins/common" "$INTERMEDIATE_MEDIAWIKI_DIRECTORY/skins"
 
+find . -name .git -type d -exec rm -rf "{}" \;
+
 cd "$CURRENT_DIRECTORY"
 
 # Finish
