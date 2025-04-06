@@ -247,6 +247,7 @@ else
 	then
 		rm -rf "$CORE_MEDIAWIKI_DIRECTORY"
 	fi
+	rm -rf "$CORE_DIRECTORY/tmp"
 	mkdir -p "$CORE_DIRECTORY/tmp"
 	cd "$CORE_DIRECTORY/tmp"
 	unzip "$CORE_DIRECTORY/core.zip"
@@ -254,7 +255,6 @@ else
 	cd "$CORE_DIRECTORY"
 	mv "$CORE_DIRECTORY/tmp/$CORE_ZIP_DIR" "$CORE_MEDIAWIKI_DIRECTORY"
 	handle_error_code "mv"
-	rm -rf "$CORE_DIRECTORY/tmp"
 fi
 cd "$CURRENT_DIRECTORY"
 
