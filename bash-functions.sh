@@ -25,6 +25,6 @@ handle_error_code() {
 	local ERROR_CODE=$?
 	if [ $ERROR_CODE -ne 0 ]
 	then
-		log_error "$1 had error code $ERROR_CODE"
+		log_fatal "$1 had error code $ERROR_CODE"
 	fi
 }
