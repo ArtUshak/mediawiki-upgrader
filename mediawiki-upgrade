@@ -44,7 +44,7 @@ upgrade_extensions() {
 		if [ -d "$EXTENSION_DIRECTORY/$EXTENSION_NAME" ]
 		then
 			cd "$EXTENSION_DIRECTORY/$EXTENSION_NAME"
-			git checkout --track "origin/$EXTENSION_BRANCH"
+			git checkout "origin/$EXTENSION_BRANCH"
 			handle_error_code "git checkout"
 			cd "$EXTENSION_DIRECTORY"
 		fi
@@ -93,7 +93,7 @@ upgrade_skins() {
 		if [ -d "$SKIN_DIRECTORY/$SKIN_NAME" ]
 		then
 			cd "$SKIN_DIRECTORY/$SKIN_NAME"
-			git checkout --track "origin/$SKIN_BRANCH"
+			git checkout "origin/$SKIN_BRANCH"
 			handle_error_code "git checkout"
 			cd "$SKIN_DIRECTORY"
 		fi
@@ -228,7 +228,7 @@ then
 		log_info "Downloading core"
 		git fetch origin "$BRANCH:$BRANCH" --depth=1
 		handle_error_code "git fetch"
-		git checkout --track "origin/$BRANCH"
+		git checkout "origin/$BRANCH"
 		handle_error_code "git checkout"
 	else
 		cd "$CORE_DIRECTORY"
