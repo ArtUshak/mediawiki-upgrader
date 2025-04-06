@@ -241,7 +241,7 @@ else
 	then
 		log_fatal "CORE_ZIP_URL environment variable is set, but CORE_ZIP_DIR is not set"
 	fi
-	curl "$CORE_ZIP_URL" --no-clobber --output "$CORE_DIRECTORY/core.zip"
+	curl "$CORE_ZIP_URL" --continue-at - --output "$CORE_DIRECTORY/core.zip"
 	handle_error_code "curl"
 	if [ -d "$CORE_MEDIAWIKI_DIRECTORY" ]
 	then
