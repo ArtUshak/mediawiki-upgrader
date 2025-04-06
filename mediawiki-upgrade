@@ -33,12 +33,12 @@ upgrade_extensions() {
 		then
 			cd "$EXTENSION_DIRECTORY/$EXTENSION_NAME"
 			log_info "Downloading extension $EXTENSION_NAME"
-			git fetch origin "$EXTENSION_BRANCH:$EXTENSION_BRANCH" --depth=1
+			git fetch origin "$EXTENSION_BRANCH" --depth=1
 			handle_error_code "git fetch"
 			cd "$EXTENSION_DIRECTORY"
 		else
 			log_info "Downloading extension $EXTENSION_NAME"
-			git clone "$EXTENSION_GIT_URL" --branch "$EXTENSION_BRANCH" --depth=1
+			git clone "$EXTENSION_GIT_URL" --branch "$EXTENSION_BRANCH" --depth=1 "$EXTENSION_NAME"
 			handle_error_code "git clone"
 		fi
 		if [ -d "$EXTENSION_DIRECTORY/$EXTENSION_NAME" ]
@@ -82,12 +82,12 @@ upgrade_skins() {
 		then
 			cd "$SKIN_DIRECTORY/$SKIN_NAME"
 			log_info "Downloading skin $SKIN_NAME"
-			git fetch origin "$SKIN_BRANCH:$SKIN_BRANCH" --depth=1
+			git fetch origin "$SKIN_BRANCH" --depth=1
 			handle_error_code "git fetch"
 			cd "$SKIN_DIRECTORY"
 		else
 			log_info "Downloading skin $SKIN_NAME"
-			git clone "$SKIN_GIT_URL" --branch "$SKIN_BRANCH" --depth=1
+			git clone "$SKIN_GIT_URL" --branch "$SKIN_BRANCH" --depth=1 "$SKIN_NAME"
 			handle_error_code "git clone"
 		fi
 		if [ -d "$SKIN_DIRECTORY/$SKIN_NAME" ]
@@ -226,7 +226,7 @@ then
 	then
 		cd "$CORE_MEDIAWIKI_DIRECTORY"
 		log_info "Downloading core"
-		git fetch origin "$BRANCH:$BRANCH" --depth=1
+		git fetch origin "$BRANCH" --depth=1
 		handle_error_code "git fetch"
 		git checkout "origin/$BRANCH"
 		handle_error_code "git checkout"
