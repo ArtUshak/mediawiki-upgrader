@@ -241,7 +241,8 @@ else
 	then
 		log_fatal "CORE_ZIP_URL environment variable is set, but CORE_ZIP_DIR is not set"
 	fi
-	curl "$CORE_ZIP_URL" --continue-at - --output "$CORE_DIRECTORY/core.zip"
+	CORE_ZIP_FILE="$CORE_DIRECTORY/$(echo $CORE_ZIP_URL | sha256sum | head -c 40).zip"
+	curl "$CORE_ZIP_URL" --continue-at - --output "$CORE_ZIP_FILE"
 	handle_error_code "curl"
 	if [ -d "$CORE_MEDIAWIKI_DIRECTORY" ]
 	then
@@ -250,7 +251,7 @@ else
 	rm -rf "$CORE_DIRECTORY/tmp"
 	mkdir -p "$CORE_DIRECTORY/tmp"
 	cd "$CORE_DIRECTORY/tmp"
-	unzip "$CORE_DIRECTORY/core.zip"
+	unzip "$CORE_ZIP_FILE"
 	handle_error_code "unzip"
 	cd "$CORE_DIRECTORY"
 	mv "$CORE_DIRECTORY/tmp/$CORE_ZIP_DIR" "$CORE_MEDIAWIKI_DIRECTORY"
