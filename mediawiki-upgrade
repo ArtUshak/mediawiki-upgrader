@@ -291,10 +291,13 @@ then
 fi
 
 cd "$INTERMEDIATE_MEDIAWIKI_DIRECTORY"
-"$PHP_EXECUTABLE" "$COMPOSER_EXECUTABLE" update --no-dev
-handle_error_code "composer update"
-"$PHP_EXECUTABLE" "$COMPOSER_EXECUTABLE" install --no-dev
-handle_error_code "composer install"
+if [ -z "$CORE_ZIP_URL" ]
+then
+	"$PHP_EXECUTABLE" "$COMPOSER_EXECUTABLE" update --no-dev
+	handle_error_code "composer update"
+	"$PHP_EXECUTABLE" "$COMPOSER_EXECUTABLE" install --no-dev
+	handle_error_code "composer install"
+fi
 
 copy_extensions
 
