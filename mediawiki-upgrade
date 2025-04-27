@@ -33,21 +33,19 @@ upgrade_extensions() {
 		then
 			cd "$EXTENSION_DIRECTORY/$EXTENSION_NAME"
 			log_info "Downloading extension $EXTENSION_NAME"
-			git pull
-			handle_error_code "git pull"
+			git fetch origin "$EXTENSION_BRANCH" --depth=1
+			handle_error_code "git fetch"
 			cd "$EXTENSION_DIRECTORY"
 		else
 			log_info "Downloading extension $EXTENSION_NAME"
-			git clone "$EXTENSION_GIT_URL"
+			git clone "$EXTENSION_GIT_URL" --branch "$EXTENSION_BRANCH" --depth=1 "$EXTENSION_NAME"
 			handle_error_code "git clone"
 		fi
 		if [ -d "$EXTENSION_DIRECTORY/$EXTENSION_NAME" ]
 		then
 			cd "$EXTENSION_DIRECTORY/$EXTENSION_NAME"
-			git checkout "$EXTENSION_BRANCH"
+			git checkout "origin/$EXTENSION_BRANCH"
 			handle_error_code "git checkout"
-			git pull
-			handle_error_code "git pull"
 			cd "$EXTENSION_DIRECTORY"
 		fi
 	done < "$EXTENSION_LIST_FILE"
@@ -84,18 +82,18 @@ upgrade_skins() {
 		then
 			cd "$SKIN_DIRECTORY/$SKIN_NAME"
 			log_info "Downloading skin $SKIN_NAME"
-			git pull
-			handle_error_code "git pull"
+			git fetch origin "$SKIN_BRANCH" --depth=1
+			handle_error_code "git fetch"
 			cd "$SKIN_DIRECTORY"
 		else
 			log_info "Downloading skin $SKIN_NAME"
-			git clone "$SKIN_GIT_URL"
+			git clone "$SKIN_GIT_URL" --branch "$SKIN_BRANCH" --depth=1 "$SKIN_NAME"
 			handle_error_code "git clone"
 		fi
 		if [ -d "$SKIN_DIRECTORY/$SKIN_NAME" ]
 		then
 			cd "$SKIN_DIRECTORY/$SKIN_NAME"
-			git checkout "$SKIN_BRANCH"
+			git checkout "origin/$SKIN_BRANCH"
 			handle_error_code "git checkout"
 			cd "$SKIN_DIRECTORY"
 		fi
@@ -222,18 +220,42 @@ fi
 
 # Updating core
 
-if [ -d "$CORE_MEDIAWIKI_DIRECTORY" ]
+if [ -z "$CORE_ZIP_URL" ]
 then
-	cd "$CORE_MEDIAWIKI_DIRECTORY"
-	log_info "Downloading core"
-	git pull
-	git checkout "$BRANCH"
-	handle_error_code "git pull"
+	if [ -d "$CORE_MEDIAWIKI_DIRECTORY" ]
+	then
+		cd "$CORE_MEDIAWIKI_DIRECTORY"
+		log_info "Downloading core"
+		git fetch origin "$BRANCH" --depth=1
+		handle_error_code "git fetch"
+		git checkout "origin/$BRANCH"
+		handle_error_code "git checkout"
+	else
+		cd "$CORE_DIRECTORY"
+		log_info "Downloading core"
+		git clone "https://gerrit.wikimedia.org/r/mediawiki/core.git" --branch "$BRANCH" --depth=1
+		handle_error_code "git clone"
+	fi
 else
+	if [ -z "$CORE_ZIP_DIR" ]
+	then
+		log_fatal "CORE_ZIP_URL environment variable is set, but CORE_ZIP_DIR is not set"
+	fi
+	CORE_ZIP_FILE="$CORE_DIRECTORY/$(echo $CORE_ZIP_URL | sha256sum | head -c 40).zip"
+	curl "$CORE_ZIP_URL" --continue-at - --output "$CORE_ZIP_FILE"
+	handle_error_code "curl"
+	if [ -d "$CORE_MEDIAWIKI_DIRECTORY" ]
+	then
+		rm -rf "$CORE_MEDIAWIKI_DIRECTORY"
+	fi
+	rm -rf "$CORE_DIRECTORY/tmp"
+	mkdir -p "$CORE_DIRECTORY/tmp"
+	cd "$CORE_DIRECTORY/tmp"
+	unzip "$CORE_ZIP_FILE"
+	handle_error_code "unzip"
 	cd "$CORE_DIRECTORY"
-	log_info "Downloading core"
-	git clone "https://gerrit.wikimedia.org/r/mediawiki/core.git" --branch "$BRANCH"
-	handle_error_code "git clone"
+	mv "$CORE_DIRECTORY/tmp/$CORE_ZIP_DIR" "$CORE_MEDIAWIKI_DIRECTORY"
+	handle_error_code "mv"
 fi
 cd "$CURRENT_DIRECTORY"
 
@@ -269,10 +291,13 @@ then
 fi
 
 cd "$INTERMEDIATE_MEDIAWIKI_DIRECTORY"
-"$PHP_EXECUTABLE" "$COMPOSER_EXECUTABLE" update --no-dev
-handle_error_code "composer update"
-"$PHP_EXECUTABLE" "$COMPOSER_EXECUTABLE" install --no-dev
-handle_error_code "composer install"
+if [ -z "$CORE_ZIP_URL" ]
+then
+	"$PHP_EXECUTABLE" "$COMPOSER_EXECUTABLE" update --no-dev
+	handle_error_code "composer update"
+	"$PHP_EXECUTABLE" "$COMPOSER_EXECUTABLE" install --no-dev
+	handle_error_code "composer install"
+fi
 
 copy_extensions
 
@@ -287,4 +312,3 @@ cd "$CURRENT_DIRECTORY"
 # Finish
 
 log_info "Finished, copied to $INTERMEDIATE_MEDIAWIKI_DIRECTORY"
-
